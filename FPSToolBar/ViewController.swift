@@ -13,6 +13,10 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        let fps = FPSToolBar.sharedInstance
+        fps.borderWidth = 2.0
+        fps.borderColor = UIColor.redColor()
+        fps.show(view)
     }
 
     override func didReceiveMemoryWarning() {
