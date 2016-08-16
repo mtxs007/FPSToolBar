@@ -16,7 +16,8 @@ class ViewController: UIViewController {
         let fps = FPSToolBar.sharedInstance
         fps.borderWidth = 2.0
         fps.borderColor = UIColor.redColor()
-        fps.show(view)
+        let rootView =  UIApplication.sharedApplication().delegate?.window!!.rootViewController?.view
+        fps.show(rootView!)
     }
 
     override func didReceiveMemoryWarning() {

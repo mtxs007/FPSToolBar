@@ -9,11 +9,13 @@
 import UIKit
 
 class FPSToolBar: NSObject {
-    //单例
+    // Singleton
     static let sharedInstance = FPSToolBar()
     
     private var disp: CADisplayLink?
     private var text: CATextLayer?
+    private var lastTime: CFTimeInterval = 0
+    private var count: UInt = 0
     
     var borderColor = UIColor.clearColor() {
         willSet {
@@ -29,14 +31,14 @@ class FPSToolBar: NSObject {
             }
         }
     }
-    var fontSize: CGFloat = 16.0 {
+    var fontSize: CGFloat = 12.0 {
         willSet {
             if text != nil {
                 text?.fontSize = newValue
             }
         }
     }
-    var frame: CGRect = CGRect(x: 70.0, y: 0.0, width: 100.0, height: 21.0) {
+    var frame: CGRect = CGRect(x: 1.0, y: 24.0, width: 50.0, height: 15.0) {
         willSet {
             if text != nil {
                 text?.frame = frame
@@ -54,6 +56,7 @@ class FPSToolBar: NSObject {
         text?.borderWidth = borderWidth
         text?.alignmentMode = kCAAlignmentCenter
         text?.contentsScale = UIScreen.mainScreen().scale
+        text?.drawsAsynchronously = true
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector:#selector(applicationDidBecomeActiveNotification), name: UIApplicationDidBecomeActiveNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(applicationWillResignActiveNotification), name: UIApplicationWillResignActiveNotification, object: nil)
@@ -62,9 +65,9 @@ class FPSToolBar: NSObject {
     func show(view: UIView) {
         guard disp != nil else {
             disp = CADisplayLink(target: self, selector: #selector(tick(_:)))
-            disp?.frameInterval = 2
             disp?.paused = false
             disp?.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSRunLoopCommonModes)
+            
             view.layer.addSublayer(text!)
             return
         }
@@ -87,26 +90,27 @@ class FPSToolBar: NSObject {
     }
     
     @objc private func tick(disp: CADisplayLink) {
-        struct FPSInfo {
-            static var frames  = 0  //画面
-            static var timeStamp = 0.0
+        guard lastTime != 0 else {
+            lastTime = disp.timestamp
+            return
         }
-        let nowTime = CFAbsoluteTimeGetCurrent()
-        if (nowTime - FPSInfo.timeStamp) > 0.5 {
-            let fpsNumber = Double(disp.frameInterval * FPSInfo.frames) / (nowTime - FPSInfo.timeStamp)
-            text?.string = "FPS:\(Int(fpsNumber))"
-            if fpsNumber >= 45.0 {
-                text?.foregroundColor = UIColor.greenColor().CGColor
-            } else if fpsNumber >= 30.0 {
-                text?.foregroundColor = UIColor.orangeColor().CGColor
-            } else {
-                text?.foregroundColor = UIColor.redColor().CGColor
-            }
-            FPSInfo.timeStamp = nowTime
-            FPSInfo.frames = 0
+        
+        count += 1
+        let interval = disp.timestamp - lastTime
+        if interval < 0.5 { return }
+        lastTime = disp.timestamp
+        let fps = CFTimeInterval(count) / interval
+        count = 0
+        
+        text?.string = String(format: "FPS:%02ld", Int(round(fps)))
+        if fps >= 45.0 {
+            text?.foregroundColor = UIColor.greenColor().CGColor
+        } else if fps >= 30.0 {
+            text?.foregroundColor = UIColor.orangeColor().CGColor
         } else {
-            FPSInfo.frames += 1
+            text?.foregroundColor = UIColor.redColor().CGColor
         }
+        
     }
     
     required init?(coder aDecoder: NSCoder) {
