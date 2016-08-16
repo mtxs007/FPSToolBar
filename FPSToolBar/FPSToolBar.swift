@@ -19,29 +19,29 @@ class FPSToolBar: NSObject {
     
     var borderColor = UIColor.clearColor() {
         willSet {
-            if text != nil {
-                text!.borderColor = newValue.CGColor
+            if let `text` = text {
+                text.borderColor = newValue.CGColor
             }
         }
     }
     var borderWidth: CGFloat = 0.0 {
         willSet {
-            if text != nil {
-                text!.borderWidth = newValue
+            if let `text` = text {
+                text.borderWidth = newValue
             }
         }
     }
     var fontSize: CGFloat = 12.0 {
         willSet {
-            if text != nil {
-                text?.fontSize = newValue
+            if let `text` = text {
+                text.fontSize = newValue
             }
         }
     }
     var frame: CGRect = CGRect(x: 1.0, y: 24.0, width: 50.0, height: 15.0) {
         willSet {
-            if text != nil {
-                text?.frame = frame
+            if let `text` = text {
+                text.frame = frame
             }
         }
     }
@@ -68,7 +68,9 @@ class FPSToolBar: NSObject {
             disp?.paused = false
             disp?.addToRunLoop(NSRunLoop.mainRunLoop(), forMode: NSRunLoopCommonModes)
             
-            view.layer.addSublayer(text!)
+            if let `text` = text {
+                view.layer.addSublayer(`text`)
+            }
             return
         }
     }
